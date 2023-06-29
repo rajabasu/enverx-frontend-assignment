@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
 import {
   AppBar,
   Box,
@@ -13,10 +15,15 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { auth } from '../firebase';
+import { clearUser } from '../features/user/userSlice';
 
 const drawerWidth = 240;
 
-function DrawerAppBar(props) {
+const Header = (props) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const authUser = useSelector((state) => state.user.user);
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -27,12 +34,19 @@ function DrawerAppBar(props) {
   const container =
     window !== undefined ? () => window().document.body : undefined;
 
+  const handleLogout = () => {
+    auth.signOut().then(() => {
+      dispatch(clearUser());
+      navigate('/');
+    });
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar component='nav'>
         <Container>
-          <Toolbar sx={{ paddingTop: 2, paddingBottom: 2 }}>
+          <Toolbar>
             <IconButton
               color='inherit'
               aria-label='open drawer'
@@ -57,10 +71,10 @@ function DrawerAppBar(props) {
                 spacing={2}
               >
                 <Grid item>
-                  <Typography variant='h6'>email@email.com</Typography>
+                  <Typography variant='h6'>{authUser?.email}</Typography>
                 </Grid>
                 <Grid item>
-                  <IconButton aria-label='logout'>
+                  <IconButton aria-label='logout' onClick={handleLogout}>
                     <LogoutIcon />
                   </IconButton>
                 </Grid>
@@ -88,7 +102,7 @@ function DrawerAppBar(props) {
         >
           <Grid container direction='column' spacing={2}>
             <Grid item>
-              <Typography variant='h6'>email@email.com</Typography>
+              <Typography variant='h6'>{authUser?.email}</Typography>
             </Grid>
             <Grid item>
               <IconButton>
@@ -98,13 +112,13 @@ function DrawerAppBar(props) {
           </Grid>
         </Drawer>
       </Box>
-      <Toolbar sx={{ paddingTop: 2, paddingBottom: 2 }} />
+      <Toolbar />
     </Box>
   );
-}
+};
 
-DrawerAppBar.propTypes = {
+Header.propTypes = {
   window: PropTypes.func,
 };
 
-export default DrawerAppBar;
+export default Header;
